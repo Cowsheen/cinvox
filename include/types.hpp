@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <source_location>
 #include <string>
+#include <chrono>
 
 namespace cnx {
 
@@ -16,7 +18,9 @@ namespace cnx {
     };
 
     struct LogMessage {
+        std::chrono::system_clock::time_point timestamp;
         LogLevel level;
+        std::source_location location;
         std::string text;
     };
 

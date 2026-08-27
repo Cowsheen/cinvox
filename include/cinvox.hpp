@@ -34,7 +34,10 @@ namespace cnx {
                         text = std::format("format error in \"{}\": {}", fmt.get(), e.what());
                     }
 
-                    enqueue(LogMessage{level, text});
+                    enqueue(LogMessage{ .timestamp = std::chrono::system_clock::now(),
+                                        .level = level,
+                                        .location = location,
+                                        .text = text});
                 };
 
             template<typename... Args>
