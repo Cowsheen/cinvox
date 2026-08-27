@@ -52,8 +52,58 @@ namespace cnx {
             }
 
             template<typename... Args>
+            void debug(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Debug, location, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void info(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Info, location, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void warning(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Warning, location, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void error(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Error, location, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void fatal(const std::source_location& location, std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Fatal, location, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
             void trace(std::format_string<Args...> fmt, Args&&... args) {
                 log(LogLevel::Trace, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void debug(std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Debug, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void info(std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Info, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void warning(std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Warning, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void error(std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Error, fmt, std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            void fatal(std::format_string<Args...> fmt, Args&&... args) {
+                log(LogLevel::Fatal, fmt, std::forward<Args>(args)...);
             }
 
             CinVox(const CinVox&)            = delete;
