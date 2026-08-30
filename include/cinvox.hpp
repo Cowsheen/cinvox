@@ -126,6 +126,8 @@ namespace cnx {
             void write(const LogMessage& msg);
             void shutdown();
 
+            [[nodiscard]] std::string format_line(const LogMessage& msg) const;
+
             // producer/consumer
             std::jthread m_worker;
             std::queue<cnx::LogMessage> m_queue;

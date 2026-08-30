@@ -1,4 +1,5 @@
 #include "cinvox.hpp"
+#include <chrono>
 
 namespace cnx {
     CinVox& CinVox::instance() {
@@ -51,7 +52,7 @@ namespace cnx {
     }
 
     void CinVox::write(const LogMessage& msg) {
-        std::string line = msg.text + '\n'; // TODO
+        std::string line = format_line(msg);
 
         std::fwrite(line.data(), 1, line.size(), stdout);
 
@@ -67,5 +68,16 @@ namespace cnx {
         m_worker.join();
     }
 
+    std::string CinVox::format_line(const LogMessage& msg) const {
+        const auto tp =  msg.timestamp;
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
+
+        return std::format("[{:%Y-%m-%d %H:%M:%S}.{:03}] [{}] [{}:{}] {}\n",
+                            tp, ms.count(),
+                            level_name(msg.level),
+                            msg.location.file_name(),
+                            msg.location.line(),
+                            msg.text);
+    }
 
 } //namespace cnx
