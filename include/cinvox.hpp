@@ -136,6 +136,7 @@ namespace cnx {
             std::queue<cnx::LogMessage> m_queue;
             std::mutex m_queue_mutex;
             std::condition_variable m_cv;
+            bool m_accepting;
 
             // output
             std::mutex m_file_mutex;
@@ -144,6 +145,7 @@ namespace cnx {
             // configuration
             std::atomic<LogLevel> m_min_log_level;
             std::atomic<bool> m_console_output;
+            std::atomic<bool> m_shutdown_done;
     };
 
 } // namespace cnx

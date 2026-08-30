@@ -10,6 +10,8 @@ namespace cnx {
     CinVox::CinVox() : m_worker([this](std::stop_token st){ run(st); })
                      , m_min_log_level(LogLevel::Trace)
                      , m_console_output(false)
+                     , m_accepting(true)
+                     , m_shutdown_done(false)
     {}
 
     CinVox::~CinVox() {
@@ -55,6 +57,9 @@ namespace cnx {
     void CinVox::enqueue(LogMessage msg) {
         {
             std::lock_guard lock(m_queue_mutex);
+
+            if(!m_accepting) return;
+
             m_queue.push(std::move(msg));
         }
         m_cv.notify_one();
@@ -76,6 +81,15 @@ namespace cnx {
     }
 
     void CinVox::shutdown() {
+        if(m_shutdown_done.exchange(true)) {
+            return;
+        }
+
+        {
+            std::lock_guard lock(m_queue_mutex);
+            m_accepting = false;
+        }
+        
         m_worker.request_stop();
         m_cv.notify_all();
         m_worker.join();
