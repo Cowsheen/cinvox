@@ -140,6 +140,7 @@ namespace cnx {
 
             // configuration
             std::atomic<LogLevel> m_min_log_level;
+            std::atomic<bool> m_console_output;
     };
 
 } // namespace cnx

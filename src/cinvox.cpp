@@ -9,6 +9,7 @@ namespace cnx {
 
     CinVox::CinVox() : m_worker([this](std::stop_token st){ run(st); })
                      , m_min_log_level(LogLevel::Trace)
+                     , m_console_output(false)
     {}
 
     CinVox::~CinVox() {
@@ -54,7 +55,11 @@ namespace cnx {
     void CinVox::write(const LogMessage& msg) {
         std::string line = format_line(msg);
 
-        std::fwrite(line.data(), 1, line.size(), stdout);
+        if(m_console_output.load(std::memory_order::relaxed)) {
+            const std::string colored = std::string(color(msg.level)) + line + "\033[0m";
+            std::fwrite(colored.data(), 1, colored.size(), stdout);
+            std::fflush(stdout);
+        }
 
         if(m_file.is_open()) {
             m_file.write(line.data(), static_cast<std::streamsize>(line.size()));
