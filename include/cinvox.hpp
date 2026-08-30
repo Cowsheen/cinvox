@@ -8,6 +8,7 @@
 #include <queue>
 #include <format>
 #include <fstream>
+#include <unordered_map>
 
 #include "types.hpp"
 
@@ -15,11 +16,15 @@ namespace cnx {
 
     class CinVox {
         public:
-            static CinVox& instance();
+            static CinVox& get(std::string_view name = "default");
 
-            void set_file_output(std::string_view path);
-            void set_min_log_level(LogLevel level);
-            void set_console_output(bool enabled);
+            static void shutdown_all();
+
+            CinVox& set_file_output(std::string_view path);
+            CinVox& set_min_log_level(LogLevel level);
+            CinVox& set_console_output(bool enabled);
+
+            const std::string& name() const;
 
             // base logging functions
             template<typename... Args>
@@ -119,9 +124,9 @@ namespace cnx {
             CinVox(CinVox&&)                 = delete;
             CinVox& operator=(CinVox&&)      = delete;
 
-        private:
-            CinVox();
+            explicit CinVox(std::string name);
             ~CinVox();
+        private:
 
             void run(std::stop_token st);
             void enqueue(LogMessage msg);
@@ -146,6 +151,19 @@ namespace cnx {
             std::atomic<LogLevel> m_min_log_level;
             std::atomic<bool> m_console_output;
             std::atomic<bool> m_shutdown_done;
+
+            std::string m_name;
+        
+        private:
+            struct Registry {
+            std::mutex mutex;
+            std::unordered_map<std::string, std::unique_ptr<CinVox>> map;
+
+            static Registry& registry() {
+                static Registry r;
+                return r;
+            };
+        };
     };
 
 } // namespace cnx

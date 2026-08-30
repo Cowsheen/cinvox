@@ -2,34 +2,61 @@
 #include <chrono>
 
 namespace cnx {
-    CinVox& CinVox::instance() {
-        static CinVox instance;
-        return instance;
+    CinVox& CinVox::get(std::string_view name){
+        auto& reg = Registry::registry();
+        std::lock_guard lock(reg.mutex);
+
+        auto it = reg.map.find(std::string(name));
+        if(it == reg.map.end()) {
+            auto logger = std::make_unique<CinVox>(std::string{name});
+            CinVox* ptr = logger.get();
+
+            reg.map.emplace(std::string{name}, std::move(logger));
+            return *ptr;
+        }
+        return *it->second;
     }
 
-    CinVox::CinVox() : m_worker([this](std::stop_token st){ run(st); })
-                     , m_min_log_level(LogLevel::Trace)
-                     , m_console_output(false)
-                     , m_accepting(true)
-                     , m_shutdown_done(false)
+    void CinVox::shutdown_all() {
+        auto& reg = Registry::registry();
+
+        std::lock_guard lock(reg.mutex);
+        for(auto& [name, logger] : reg.map) {
+            logger->shutdown();
+        }
+    }
+
+    CinVox::CinVox(std::string name): m_worker([this](std::stop_token st){ run(st); })
+                                    , m_min_log_level(LogLevel::Trace)
+                                    , m_console_output(true)
+                                    , m_accepting(true)
+                                    , m_shutdown_done(false)
+                                    , m_name(std::move(name))
     {}
 
     CinVox::~CinVox() {
         shutdown();
     }
 
-    void CinVox::set_file_output(std::string_view path) {
+    CinVox& CinVox::set_file_output(std::string_view path) {
         std::lock_guard lock(m_file_mutex);
         m_file.close();
         m_file.open(std::string(path), std::ios::out | std::ios::app);
+        return *this;
     }
 
-    void CinVox::set_min_log_level(LogLevel level) {
+    CinVox& CinVox::set_min_log_level(LogLevel level) {
         m_min_log_level.store(level, std::memory_order_relaxed);
+        return *this;
     }
 
-    void CinVox::set_console_output(bool enabled) {
+    CinVox& CinVox::set_console_output(bool enabled) {
         m_console_output.store(enabled, std::memory_order_relaxed);
+        return *this;
+    }
+
+    const std::string& CinVox::name() const {
+        return m_name;
     }
 
     void CinVox::run(std::stop_token st) {
@@ -99,8 +126,9 @@ namespace cnx {
         const auto tp =  msg.timestamp;
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
 
-        return std::format("[{:%Y-%m-%d %H:%M:%S}.{:03}] [{}] [{}:{}] {}\n",
+        return std::format("[{:%Y-%m-%d %H:%M:%S}.{:03}] [{}] [{}] [{}:{}] {}\n",
                             tp, ms.count(),
+                            m_name,
                             level_name(msg.level),
                             basename(msg.location.file_name()),
                             msg.location.line(),
