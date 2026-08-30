@@ -5,6 +5,7 @@ int main() {
 
     auto& logger = cnx::CinVox::instance();
     logger.set_file_output("log.txt");
+    logger.set_console_output(true);
 
     logger.trace("direct call without location tracking");
 

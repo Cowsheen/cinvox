@@ -22,6 +22,14 @@ namespace cnx {
         m_file.open(std::string(path), std::ios::out | std::ios::app);
     }
 
+    void CinVox::set_min_log_level(LogLevel level) {
+        m_min_log_level.store(level, std::memory_order_relaxed);
+    }
+
+    void CinVox::set_console_output(bool enabled) {
+        m_console_output.store(enabled, std::memory_order_relaxed);
+    }
+
     void CinVox::run(std::stop_token st) {
         while(true) {
             std::queue<LogMessage> batch;

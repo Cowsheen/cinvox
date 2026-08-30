@@ -18,6 +18,8 @@ namespace cnx {
             static CinVox& instance();
 
             void set_file_output(std::string_view path);
+            void set_min_log_level(LogLevel level);
+            void set_console_output(bool enabled);
 
             // base logging functions
             template<typename... Args>
