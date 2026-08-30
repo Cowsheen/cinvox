@@ -7,6 +7,7 @@
 #include <atomic>
 #include <queue>
 #include <format>
+#include <fstream>
 
 #include "types.hpp"
 
@@ -15,6 +16,8 @@ namespace cnx {
     class CinVox {
         public:
             static CinVox& instance();
+
+            void set_file_output(std::string_view path);
 
             // base logging functions
             template<typename... Args>
@@ -128,6 +131,10 @@ namespace cnx {
             std::queue<cnx::LogMessage> m_queue;
             std::mutex m_queue_mutex;
             std::condition_variable m_cv;
+
+            // output
+            std::mutex m_file_mutex;
+            std::ofstream m_file;
 
             // configuration
             std::atomic<LogLevel> m_min_log_level;

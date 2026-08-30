@@ -14,6 +14,12 @@ namespace cnx {
         shutdown();
     }
 
+    void CinVox::set_file_output(std::string_view path) {
+        std::lock_guard lock(m_file_mutex);
+        m_file.close();
+        m_file.open(std::string(path), std::ios::out | std::ios::app);
+    }
+
     void CinVox::run(std::stop_token st) {
         while(true) {
             std::queue<LogMessage> batch;
@@ -48,6 +54,11 @@ namespace cnx {
         std::string line = msg.text + '\n'; // TODO
 
         std::fwrite(line.data(), 1, line.size(), stdout);
+
+        if(m_file.is_open()) {
+            m_file.write(line.data(), static_cast<std::streamsize>(line.size()));
+            m_file.flush();
+        }
     }
 
     void CinVox::shutdown() {
