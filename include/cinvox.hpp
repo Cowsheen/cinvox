@@ -127,6 +127,7 @@ namespace cnx {
             void shutdown();
 
             [[nodiscard]] std::string format_line(const LogMessage& msg) const;
+            [[nodiscard]] std::string_view basename(std::string_view path) const;
 
             // producer/consumer
             std::jthread m_worker;

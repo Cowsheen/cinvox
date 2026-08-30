@@ -80,9 +80,14 @@ namespace cnx {
         return std::format("[{:%Y-%m-%d %H:%M:%S}.{:03}] [{}] [{}:{}] {}\n",
                             tp, ms.count(),
                             level_name(msg.level),
-                            msg.location.file_name(),
+                            basename(msg.location.file_name()),
                             msg.location.line(),
                             msg.text);
+    }
+
+    std::string_view CinVox::basename(std::string_view path) const {
+        const auto pos = path.find_last_of("/\\");
+        return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
     }
 
 } //namespace cnx
