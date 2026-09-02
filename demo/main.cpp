@@ -1,4 +1,5 @@
 #include "cinvox.hpp"
+#include "cinvox_config.hpp"
 #include "macros.hpp"
 
 namespace loggers {
@@ -7,16 +8,7 @@ namespace loggers {
 }
 
 int main() {
-    cnx::CinVox::get(loggers::GUI)
-        .set_file_output("log.txt")
-        .set_min_log_level(cnx::LogLevel::Info)
-        .set_console_output(true);
-
-    cnx::CinVox::get(loggers::BACKEND)
-        .set_file_output("log.txt")
-        .set_min_log_level(cnx::LogLevel::Debug)
-        .set_console_output(true);
-
+    cnx::configure_from_json("config.json");
 
     auto& gui = cnx::CinVox::get(loggers::GUI);
     auto& backend = cnx::CinVox::get(loggers::BACKEND);
@@ -32,8 +24,8 @@ int main() {
         backend.error("connection to database lost");
     });
 
-    INFO(loggers::GUI, "button '{}' clicked", "OK");
-    ERROR(loggers::BACKEND, "retry {} failed", 3);
+    INFO("button '{}' clicked", "OK");
+    ERROR("retry {} failed", 3);
 
     cnx::CinVox::shutdown_all();
 

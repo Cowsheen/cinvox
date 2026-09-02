@@ -24,6 +24,13 @@ namespace cnx {
         std::string text;
     };
 
+    struct LogConfig {
+        std::string name;
+        LogLevel level = LogLevel::Trace;
+        bool console = true;
+        std::optional<std::string> file;
+    };
+
     [[nodiscard]] static constexpr std::string_view level_name(LogLevel level) {
         switch (level) {
             case LogLevel::Trace:   return "TRACE";

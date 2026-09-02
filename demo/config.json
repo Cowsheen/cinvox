@@ -1,0 +1,13 @@
+{
+  "defaults": {
+    "level": "info",
+    "console": true,
+    "file": "logs/{name}.log"
+  },
+  "loggers": [
+    { "name": "GUI",     "level": "debug" },
+    { "name": "BACKEND", "level": "trace", "file": "logs/backend.log" },
+    { "name": "CORE",    "console": false },
+    { "name": "default" }
+  ]
+}
