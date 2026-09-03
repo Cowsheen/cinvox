@@ -1,5 +1,6 @@
 #include "cinvox.hpp"
 #include <chrono>
+#include <filesystem>
 
 namespace cnx {
     CinVox& CinVox::get(std::string_view name){
@@ -41,6 +42,12 @@ namespace cnx {
     CinVox& CinVox::set_file_output(std::string_view path) {
         std::lock_guard lock(m_file_mutex);
         m_file.close();
+
+        auto dir = std::filesystem::path(path).parent_path();
+        if(!dir.empty() && !std::filesystem::exists(dir)) {
+            std::filesystem::create_directories(dir);
+        }
+        
         m_file.open(std::string(path), std::ios::out | std::ios::app);
         return *this;
     }
