@@ -13,13 +13,14 @@ namespace cnx {
             lower.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
         }
 
-        if (lower == "trace")                       return LogLevel::Trace;
-        if (lower == "debug")                       return LogLevel::Debug;
-        if (lower == "info")                        return LogLevel::Info;
-        if (lower == "warn" || lower == "warning")  return LogLevel::Warning;
-        if (lower == "error")                       return LogLevel::Error;
-        if (lower == "critical" || lower == "fatal") return LogLevel::Fatal;
-        if (lower == "off" || lower == "none")      return LogLevel::Off;
+        if (lower == "trace")                           return LogLevel::Trace;
+        if (lower == "debug")                           return LogLevel::Debug;
+        if (lower == "info")                            return LogLevel::Info;
+        if (lower == "warn" || lower == "warning")      return LogLevel::Warning;
+        if (lower == "error")                           return LogLevel::Error;
+        if (lower == "critical" || lower == "fatal")    return LogLevel::Fatal;
+        if (lower == "off" || lower == "none")          return LogLevel::Off;
+
         return std::nullopt;
     }
 
@@ -109,14 +110,31 @@ std::vector<LogConfig> load_config(const std::string& path) {
     return out;
 }
 
-void configure_from_json(const std::string& path) {
-    for (auto& c : load_config(path)) {
+void apply_config(const std::vector<LogConfig>& configs) {
+    std::unordered_multiset<std::string> configured;
+    configured.reserve(configs.size());
+
+    for (const auto& c : configs) {
+        configured.insert(c.name);
+    }
+
+    for (const std::string& name : CinVox::names()) {
+        if (!configured.contains(name)) {
+            CinVox::get(name).set_min_log_level(LogLevel::Off); // TODO figure out what to do with loggers that are not in config file.
+        }                                                       // Disabled (level = Off) for now
+    }
+
+    for (const auto& c : configs) {
         auto& log = CinVox::get(c.name);
         log.set_min_log_level(c.level)
            .set_console_output(c.console);
         if (c.file && !c.file->empty())
             log.set_file_output(*c.file);
     }
+}
+
+void configure_from_json(const std::string& path) {
+    apply_config(load_config(path));
 }
 
 } // namespace cnx

@@ -2,8 +2,7 @@
 #include "types.hpp"
 
 namespace cnx {
-
-    // std::optional<LogLevel> parse_level(std::string_view s);
-    // std::string expand_placeholders(std::string pattern, std::string_view name);
     void configure_from_json(const std::string& path);
+    std::vector<LogConfig> load_config(const std::string& path);
+    void apply_config(const std::vector<LogConfig>& configs);
 } // namespace cnx

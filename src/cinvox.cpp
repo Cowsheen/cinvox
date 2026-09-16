@@ -41,6 +41,10 @@ namespace cnx {
 
     CinVox& CinVox::set_file_output(std::string_view path) {
         std::lock_guard lock(m_file_mutex);
+        if(m_file_path == path) {
+            return *this;
+        }
+
         m_file.close();
 
         auto dir = std::filesystem::path(path).parent_path();
@@ -49,6 +53,9 @@ namespace cnx {
         }
         
         m_file.open(std::string(path), std::ios::out | std::ios::app);
+        if(m_file.is_open()) {
+            m_file_path = std::string(path);
+        }
         return *this;
     }
 
@@ -64,6 +71,17 @@ namespace cnx {
 
     const std::string& CinVox::name() const {
         return m_name;
+    }
+
+    std::vector<std::string> CinVox::names() {
+        auto& reg = Registry::registry();
+        std::lock_guard lock(reg.mutex);
+        std::vector<std::string> out;
+        out.reserve(reg.map.size());
+        for(const auto& [name, _] : reg.map) {
+            out.push_back(name);
+        }
+        return out;
     }
 
     void CinVox::run(std::stop_token st) {

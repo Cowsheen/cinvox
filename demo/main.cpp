@@ -1,6 +1,7 @@
 #include "cinvox.hpp"
 #include "cinvox_config.hpp"
 #include "macros.hpp"
+#include "config_watcher.hpp"
 
 namespace loggers {
     inline constexpr std::string_view GUI = "GUI";
@@ -9,6 +10,7 @@ namespace loggers {
 
 int main() {
     cnx::configure_from_json("config.json");
+    cnx::ConfigWatcher watcher("config.json", std::chrono::seconds(1));
 
     auto& gui = cnx::CinVox::get(loggers::GUI);
     auto& backend = cnx::CinVox::get(loggers::BACKEND);
@@ -27,6 +29,13 @@ int main() {
     INFO("button '{}' clicked", "OK");
     ERROR("retry {} failed", 3);
 
+    for (int i = 0; i < 600; ++i) { // Watcher demo
+        gui.debug("frame {}", i);
+        backend.debug("tick {}", i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    }
+
+    watcher.shutdown();
     cnx::CinVox::shutdown_all();
 
     return 0;

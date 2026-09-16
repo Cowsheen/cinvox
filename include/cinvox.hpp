@@ -9,7 +9,7 @@
 #include <format>
 #include <fstream>
 #include <unordered_map>
-
+#include <vector>
 #include "types.hpp"
 
 namespace cnx {
@@ -25,6 +25,7 @@ namespace cnx {
             CinVox& set_console_output(bool enabled);
 
             const std::string& name() const;
+            static std::vector<std::string> names();
 
             // base logging functions
             template<typename... Args>
@@ -146,6 +147,7 @@ namespace cnx {
             // output
             std::mutex m_file_mutex;
             std::ofstream m_file;
+            std::string m_file_path;
 
             // configuration
             std::atomic<LogLevel> m_min_log_level;

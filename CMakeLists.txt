@@ -17,6 +17,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 set(SOURCES
     src/cinvox.cpp
     src/cinvox_config.cpp
+    src/config_watcher.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC
