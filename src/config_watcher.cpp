@@ -3,7 +3,7 @@
 #include "cinvox.hpp"
 
 namespace cnx {
-    ConfigWatcher::ConfigWatcher(std::string path, std::chrono::milliseconds  poll_interval) 
+    ConfigWatcher::ConfigWatcher(std::string path, std::chrono::milliseconds poll_interval) 
     : m_path(path)
     , m_poll_interval(poll_interval)
     , m_last_mtime()
@@ -71,7 +71,7 @@ namespace cnx {
             }
 
             if(m_failed) {
-                m_failed = true;
+                m_failed = false;
                 CinVox::get("default").info("config '{}' reloaded successfully ({} loggers)", m_path, configs.size());
             } else {
                 CinVox::get("default").info("config '{}' reloaded ({} loggers)", m_path, configs.size());

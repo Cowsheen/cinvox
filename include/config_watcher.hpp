@@ -11,7 +11,7 @@ namespace cnx {
 
     class ConfigWatcher {
         public:
-            explicit ConfigWatcher(std::string path, std::chrono::milliseconds  poll_interval = std::chrono::milliseconds(1000));
+            explicit ConfigWatcher(std::string path, std::chrono::milliseconds poll_interval = std::chrono::milliseconds(1000));
 
             ConfigWatcher(const ConfigWatcher&) = delete;
             ConfigWatcher& operator=(const ConfigWatcher&) = delete;

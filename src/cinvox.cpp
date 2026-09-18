@@ -7,32 +7,43 @@ namespace cnx {
         auto& reg = Registry::registry();
         std::lock_guard lock(reg.mutex);
 
-        auto it = reg.map.find(std::string(name));
-        if(it == reg.map.end()) {
-            auto logger = std::make_unique<CinVox>(std::string{name});
-            CinVox* ptr = logger.get();
-
-            reg.map.emplace(std::string{name}, std::move(logger));
-            return *ptr;
+        if(auto it = reg.map.find(std::string{name}); it != reg.map.end()) {
+            return *it->second;
         }
-        return *it->second;
+
+        if(!reg.accepting) {
+            return sink();
+        }
+        auto logger = std::make_unique<CinVox>(std::string{name});
+        CinVox* ptr = logger.get();
+        reg.map.emplace(std::string{name}, std::move(logger));
+        return *ptr;
     }
 
     void CinVox::shutdown_all() {
-        auto& reg = Registry::registry();
+        std::vector<CinVox*> loggers;
+        {
+            auto& reg = Registry::registry();
+            std::lock_guard lock(reg.mutex);
+            reg.accepting = false;
+            loggers.reserve(reg.map.size());
+            for(auto& [name, l] : reg.map) {
+                loggers.push_back(l.get());
+            }
+        }
 
-        std::lock_guard lock(reg.mutex);
-        for(auto& [name, logger] : reg.map) {
+        for(CinVox* logger : loggers) {
             logger->shutdown();
         }
     }
 
-    CinVox::CinVox(std::string name): m_worker([this](std::stop_token st){ run(st); })
-                                    , m_min_log_level(LogLevel::Trace)
-                                    , m_console_output(true)
-                                    , m_accepting(true)
-                                    , m_shutdown_done(false)
-                                    , m_name(std::move(name))
+    CinVox::CinVox(std::string name, bool start_worker)
+        : m_worker(start_worker ? std::jthread([this](std::stop_token st){ run(st); }) : std::jthread({}))
+        , m_min_log_level(LogLevel::Trace)
+        , m_console_output(true)
+        , m_accepting(true)
+        , m_shutdown_done(false)
+        , m_name(std::move(name))
     {}
 
     CinVox::~CinVox() {
@@ -82,6 +93,12 @@ namespace cnx {
             out.push_back(name);
         }
         return out;
+    }
+
+    // Shared no-op logger returned for unknown names after shutdown
+    CinVox& CinVox::sink() {
+        static auto* s = new CinVox("<sink>", false);   // leak: safe during teardown
+        return *s;
     }
 
     void CinVox::run(std::stop_token st) {
@@ -142,9 +159,11 @@ namespace cnx {
             m_accepting = false;
         }
         
-        m_worker.request_stop();
-        m_cv.notify_all();
-        m_worker.join();
+        if(m_worker.joinable()) {
+            m_worker.request_stop();
+            m_cv.notify_all();
+            m_worker.join();
+        }
     }
 
     std::string CinVox::format_line(const LogMessage& msg) const {

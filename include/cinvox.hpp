@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 #include "types.hpp"
-
+#include "log_manager.hpp"
 namespace cnx {
 
     class CinVox {
@@ -26,6 +26,8 @@ namespace cnx {
 
             const std::string& name() const;
             static std::vector<std::string> names();
+
+            static CinVox& sink();
 
             // base logging functions
             template<typename... Args>
@@ -125,7 +127,7 @@ namespace cnx {
             CinVox(CinVox&&)                 = delete;
             CinVox& operator=(CinVox&&)      = delete;
 
-            explicit CinVox(std::string name);
+            explicit CinVox(std::string name, bool start_worker = true);
             ~CinVox();
         private:
 
@@ -158,14 +160,26 @@ namespace cnx {
         
         private:
             struct Registry {
-            std::mutex mutex;
-            std::unordered_map<std::string, std::unique_ptr<CinVox>> map;
+                Registry() {
+                    std::atexit(+[](){ CinVox::shutdown_all(); });
+                };
+                std::mutex mutex;
+                std::unordered_map<std::string, std::unique_ptr<CinVox>> map;
+                bool accepting = true;
 
-            static Registry& registry() {
-                static Registry r;
-                return r;
+                static Registry& registry() {
+                    static auto* reg = new Registry; // leak: never destroued at exit
+                    return *reg;
+                };
             };
-        };
     };
+
+inline void init(const std::string& config_path, std::chrono::milliseconds poll_interval = std::chrono::milliseconds(1000)) {
+    LogManager::instance().init(config_path, poll_interval);
+}
+
+inline void shutdown() {
+    LogManager::instance().shutdown();
+}
 
 } // namespace cnx

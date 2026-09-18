@@ -18,6 +18,7 @@ set(SOURCES
     src/cinvox.cpp
     src/cinvox_config.cpp
     src/config_watcher.cpp
+    src/log_manager.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC
