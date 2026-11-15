@@ -1,5 +1,8 @@
+#define CINVOX_LOGGER "DEMO"
+
 #include "cinvox.hpp"
 #include "macros.hpp"
+
 
 namespace loggers {
     inline constexpr std::string_view GUI = "GUI";
