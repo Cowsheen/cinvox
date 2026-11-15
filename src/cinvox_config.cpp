@@ -42,10 +42,10 @@ namespace cnx {
         return out;
     }
 
-std::vector<LogConfig> load_config(const std::string& path) {
+std::optional<std::vector<LogConfig>> load_config(const std::string& path) {
     std::ifstream in(path);
     if (!in)
-        throw std::runtime_error("cannot open config file: " + path);
+        return std::nullopt;
 
     nlohmann::json doc;
     in >> doc;                                   // throws on malformed JSON
@@ -110,11 +110,14 @@ std::vector<LogConfig> load_config(const std::string& path) {
     return out;
 }
 
-void apply_config(const std::vector<LogConfig>& configs) {
+void apply_config(const std::optional<std::vector<LogConfig>>& configs) {
+    if(!configs.has_value())
+        return;
+    
     std::unordered_multiset<std::string> configured;
-    configured.reserve(configs.size());
+    configured.reserve(configs.value().size());
 
-    for (const auto& c : configs) {
+    for (const auto& c : configs.value()) {
         configured.insert(c.name);
     }
 
@@ -124,7 +127,7 @@ void apply_config(const std::vector<LogConfig>& configs) {
         }                                                       // Disabled (level = Off) for now
     }
 
-    for (const auto& c : configs) {
+    for (const auto& c : configs.value()) {
         auto& log = CinVox::get(c.name);
         log.set_min_log_level(c.level)
            .set_console_output(c.console);

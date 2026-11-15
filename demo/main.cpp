@@ -1,5 +1,4 @@
 #include "cinvox.hpp"
-#include "cinvox_config.hpp"
 #include "macros.hpp"
 
 namespace loggers {

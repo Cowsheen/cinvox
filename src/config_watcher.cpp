@@ -61,6 +61,15 @@ namespace cnx {
     void ConfigWatcher::reload() {
         try {
             auto configs = load_config(m_path);
+
+            if(!configs.has_value()) {
+                if(!m_failed) {
+                    m_failed = true;
+                    // CinVox::get("default").warning("config '{}' not found — keeping current configuration", m_path);
+                }
+                return;
+            }
+
             apply_config(configs);
 
             try {
@@ -72,9 +81,9 @@ namespace cnx {
 
             if(m_failed) {
                 m_failed = false;
-                CinVox::get("default").info("config '{}' reloaded successfully ({} loggers)", m_path, configs.size());
+                CinVox::get("default").info("config '{}' reloaded successfully ({} loggers)", m_path, configs.value().size());
             } else {
-                CinVox::get("default").info("config '{}' reloaded ({} loggers)", m_path, configs.size());
+                CinVox::get("default").info("config '{}' reloaded ({} loggers)", m_path, configs.value().size());
             }
 
         } catch (const std::exception& e) {
